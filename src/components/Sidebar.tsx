@@ -1,8 +1,8 @@
 import type React from "react"
-import { Tv, Monitor, List, Trophy, Sun, Moon, Home, X } from "lucide-react"
+import { Tv, Monitor, List, Trophy, Sun, Moon, Home, X, Scale } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 
-type Tab = "home" | "iptv" | "catalog" | "sports"
+type Tab = "home" | "iptv" | "catalog" | "sports" | "legal"
 
 interface SidebarProps {
   activeTab: Tab
@@ -16,6 +16,7 @@ const navItems: { id: Tab; label: string; icon: React.ComponentType<{ className?
   { id: "iptv", label: "IPTV Player", icon: Tv },
   { id: "catalog", label: "IPTV Catalog", icon: List },
   { id: "sports", label: "Live Sports", icon: Trophy },
+  { id: "legal", label: "Legal & Terms", icon: Scale },
 ]
 
 export default function Sidebar({ activeTab, onTabChange, isOpen, onClose }: SidebarProps) {

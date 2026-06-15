@@ -15,6 +15,7 @@ import {
   Code2,
   Palette,
   Gauge,
+  Scale,
 } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 import type { Tab } from "../App"
@@ -289,6 +290,30 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             </div>
           </div>
         </div>
+      </section>
+
+      <section
+        className={`rounded-2xl border p-4 sm:p-5 ${
+          isDark ? "bg-dark-300/30 border-white/[0.06]" : "bg-white border-slate-200"
+        }`}
+      >
+        <button
+          onClick={() => onNavigate("legal")}
+          className={`w-full flex items-center gap-3 text-left transition-colors rounded-xl px-3 py-2 ${
+            isDark ? "hover:bg-white/5" : "hover:bg-slate-50"
+          }`}
+        >
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
+            <Scale className="w-5 h-5 text-accent-light" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className={`text-sm font-bold ${strongText}`}>Legal & Terms</p>
+            <p className={`text-xs ${mutedText}`}>
+              Disclaimer, terms and conditions, privacy policy, and liability information.
+            </p>
+          </div>
+          <ArrowRight className="w-4 h-4 shrink-0 text-accent-light" />
+        </button>
       </section>
     </div>
   )
