@@ -95,7 +95,7 @@ export default function IPTVPlayer() {
           </div>
           <div>
             <h2 className={`text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-              IPTV Player
+              Streams
             </h2>
             <p className={`text-sm ${isDark ? "text-dark-100" : "text-slate-500"}`}>
               Select a channel to start streaming
