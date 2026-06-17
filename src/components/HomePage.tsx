@@ -12,9 +12,6 @@ import {
   Play,
   Wifi,
   Search,
-  Code2,
-  Palette,
-  Gauge,
   Scale,
 } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
@@ -38,9 +35,9 @@ const destinations = [
     id: "catalog" as Tab,
     icon: List,
     title: "IPTV Catalog",
-    description: "Search the full iptv-org channel list and preview streams.",
+    description: "Search & browse channels from iptv-org and Free-TV sources.",
     color: "text-sport-green",
-    metric: "2500+",
+    metric: "4000+",
     metricLabel: "channels",
   },
   {
@@ -49,14 +46,14 @@ const destinations = [
     title: "Live Sports",
     description: "Browse live and upcoming matches with embedded stream sources.",
     color: "text-sport-yellow",
-    metric: "8",
+    metric: "9",
     metricLabel: "sports",
   },
 ]
 
 const stats = [
-  { label: "IPTV channels", value: "2500+", icon: Radio, color: "text-accent-light" },
-  { label: "Sports categories", value: "8", icon: Trophy, color: "text-sport-yellow" },
+  { label: "IPTV channels", value: "4000+", icon: Radio, color: "text-accent-light" },
+  { label: "Sports categories", value: "9", icon: Trophy, color: "text-sport-yellow" },
   { label: "Open source", value: "100%", icon: Heart, color: "text-sport-red" },
   { label: "Live-ready", value: "HLS", icon: Wifi, color: "text-sport-green" },
 ]
@@ -66,9 +63,17 @@ const sourceCards = [
     title: "iptv-org/iptv",
     href: "https://github.com/iptv-org/iptv",
     icon: Globe,
-    description: "Community-maintained M3U playlists powering the IPTV catalog.",
+    description: "Community-maintained M3U playlists with category-based grouping.",
     tags: ["M3U", "Open source", "Global"],
     tone: "text-sport-green",
+  },
+  {
+    title: "Free-TV/IPTV",
+    href: "https://github.com/Free-TV/IPTV",
+    icon: Globe,
+    description: "Country-organized IPTV channels with 80+ countries and region tags.",
+    tags: ["M3U", "Country-based", "1800+ channels"],
+    tone: "text-accent-light",
   },
   {
     title: "SportSRC API",
@@ -78,15 +83,6 @@ const sourceCards = [
     tags: ["REST API", "Streams", "Sports"],
     tone: "text-sport-yellow",
   },
-]
-
-const stack = [
-  { name: "React 19", icon: Code2 },
-  { name: "TypeScript", icon: Search },
-  { name: "Tailwind CSS", icon: Palette },
-  { name: "Vite", icon: Zap },
-  { name: "HLS.js", icon: Monitor },
-  { name: "Lucide", icon: Gauge },
 ]
 
 export default function HomePage({ onNavigate }: HomePageProps) {
@@ -209,86 +205,59 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Heart className={`w-4 h-4 ${mutedText}`} />
-            <h2 className={`text-sm font-semibold uppercase tracking-wider ${mutedText}`}>
-              Data Sources
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            {sourceCards.map((source) => (
-              <div
-                key={source.title}
-                className={`rounded-2xl border p-4 ${panelClass}`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
-                    <source.icon className={`w-5 h-5 ${source.tone}`} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className={`text-base font-bold truncate ${strongText}`}>
-                        {source.title}
-                      </h3>
-                      <a
-                        href={source.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent-light hover:text-accent"
-                        aria-label={`Open ${source.title}`}
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                    <p className={`mt-1 text-sm leading-relaxed ${mutedText}`}>
-                      {source.description}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {source.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={`rounded-lg px-2 py-1 text-[10px] font-semibold ${
-                        isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <Heart className={`w-4 h-4 ${mutedText}`} />
+          <h2 className={`text-sm font-semibold uppercase tracking-wider ${mutedText}`}>
+            Data Sources
+          </h2>
         </div>
 
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Code2 className={`w-4 h-4 ${mutedText}`} />
-            <h2 className={`text-sm font-semibold uppercase tracking-wider ${mutedText}`}>
-              Built With
-            </h2>
-          </div>
-
-          <div className={`rounded-2xl border p-4 ${panelClass}`}>
-            <div className="grid grid-cols-2 gap-2">
-              {stack.map((tech) => (
-                <div
-                  key={tech.name}
-                  className={`flex min-h-[40px] items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium ${
-                    isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  <tech.icon className="w-4 h-4 shrink-0 text-accent-light" />
-                  <span className="truncate">{tech.name}</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          {sourceCards.map((source) => (
+            <div
+              key={source.title}
+              className={`rounded-2xl border p-4 ${panelClass}`}
+            >
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
+                  <source.icon className={`w-5 h-5 ${source.tone}`} />
                 </div>
-              ))}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className={`text-base font-bold truncate ${strongText}`}>
+                      {source.title}
+                    </h3>
+                    <a
+                      href={source.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent-light hover:text-accent"
+                      aria-label={`Open ${source.title}`}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                  <p className={`mt-1 text-sm leading-relaxed ${mutedText}`}>
+                    {source.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {source.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className={`rounded-lg px-2 py-1 text-[10px] font-semibold ${
+                      isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 

@@ -16,6 +16,7 @@ import {
   Timer,
 } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
+import { useLiveStream } from "../context/LiveStreamContext"
 import type { Match } from "../types"
 
 const API_BASE = "https://api.sportsrc.org"
@@ -90,6 +91,7 @@ function formatDate(ts: number) {
 export default function LiveSports() {
   const { theme } = useTheme()
   const isDark = theme === "dark"
+  const { setLiveMatch } = useLiveStream()
   const [sport, setSport] = useState("football")
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
@@ -132,6 +134,45 @@ export default function LiveSports() {
 
     return () => window.clearTimeout(timeout)
   }, [sport, fetchMatches])
+
+  // Push latest live football match to Streams section
+  useEffect(() => {
+    if (sport !== "football" || matches.length === 0) return
+
+    let cancelled = false
+
+    async function pushLiveMatch() {
+      const target = matches[0]
+      try {
+        const res = await fetch(
+          `${API_BASE}/?data=detail&category=${target.category}&id=${target.id}`,
+          { signal: AbortSignal.timeout(10000) }
+        )
+        if (!res.ok) return
+        const json = await res.json()
+        if (cancelled || !json.success || !json.data) return
+
+        const d = json.data as MatchDetail
+        if (!d.sources?.length) return
+
+        const bestSource = d.sources.find((s) => s.hd) || d.sources[0]
+        setLiveMatch({
+          id: d.id,
+          title: d.title,
+          category: d.category,
+          embedUrl: getDirectPlayerUrl(bestSource),
+          teams: d.teams,
+          source: bestSource.source,
+          viewers: bestSource.viewers,
+        })
+      } catch {
+        // Silently fail — Streams section stays unchanged
+      }
+    }
+
+    void pushLiveMatch()
+    return () => { cancelled = true }
+  }, [sport, matches, setLiveMatch])
 
   const fetchDetail = async (match: Match) => {
     setDetailLoading(true)

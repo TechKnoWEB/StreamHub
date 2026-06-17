@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Menu, Monitor } from "lucide-react"
 import { ThemeProvider, useTheme } from "./context/ThemeContext"
+import { LiveStreamProvider } from "./context/LiveStreamContext"
 import Sidebar from "./components/Sidebar"
 import HomePage from "./components/HomePage"
 import IPTVPlayer from "./components/IPTVPlayer"
@@ -10,8 +11,32 @@ import LegalDisclaimer from "./components/LegalDisclaimer"
 
 export type Tab = "home" | "iptv" | "catalog" | "sports" | "legal"
 
+const VALID_TABS: Tab[] = ["home", "iptv", "catalog", "sports", "legal"]
+
+function getInitialTab(): Tab {
+  const hash = window.location.hash.replace("#", "")
+  if (VALID_TABS.includes(hash as Tab)) return hash as Tab
+  return "home"
+}
+
 function AppShell() {
-  const [activeTab, setActiveTab] = useState<Tab>("home")
+  const [activeTab, setActiveTab] = useState<Tab>(getInitialTab)
+
+  useEffect(() => {
+    window.location.hash = activeTab
+  }, [activeTab])
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.replace("#", "")
+      if (VALID_TABS.includes(hash as Tab)) {
+        setActiveTab(hash as Tab)
+      }
+    }
+    window.addEventListener("hashchange", onHashChange)
+    return () => window.removeEventListener("hashchange", onHashChange)
+  }, [])
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme } = useTheme()
   const isDark = theme === "dark"
@@ -69,7 +94,9 @@ function AppShell() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppShell />
+      <LiveStreamProvider>
+        <AppShell />
+      </LiveStreamProvider>
     </ThemeProvider>
   )
 }

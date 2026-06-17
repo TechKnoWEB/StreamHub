@@ -12,12 +12,17 @@ import {
   Radio,
   Filter,
   Sparkles,
+  Globe,
+  SlidersHorizontal,
 } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 import VideoPlayer from "./VideoPlayer"
 import type { M3UChannel } from "../types"
 
-const M3U_URL = "https://iptv-org.github.io/iptv/index.category.m3u"
+const M3U_SOURCES = [
+  { url: "https://iptv-org.github.io/iptv/index.category.m3u", label: "iptv-org" },
+  { url: "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8", label: "Free-TV" },
+]
 
 function parseM3U(m3u: string): M3UChannel[] {
   const channels: M3UChannel[] = []
@@ -55,11 +60,17 @@ function parseM3U(m3u: string): M3UChannel[] {
 }
 
 function extractCountry(channel: M3UChannel): string | null {
+  const tvgCountry = channel.raw?.match(/tvg-country="([^"]*)"/)?.[1]
+  if (tvgCountry && tvgCountry !== "ALL" && tvgCountry.trim()) {
+    return tvgCountry.trim().toUpperCase()
+  }
   const id = channel.tvgId || channel.id
-  const m = id.match(/^[a-z]{2,3}$/i)
-  if (m) return m[0].toUpperCase()
-  const nameMatch = channel.raw?.match(/tvg-country="([^"]*)"/)
-  if (nameMatch?.[1] && nameMatch[1] !== "ALL") return nameMatch[1]
+  const dotAtMatch = id.match(/\.([a-zA-Z]{2,3})@/)
+  if (dotAtMatch) return dotAtMatch[1].toUpperCase()
+  const dotTldMatch = id.match(/\.([a-zA-Z]{2,3})$/)
+  if (dotTldMatch) return dotTldMatch[1].toUpperCase()
+  const shortId = id.match(/^([a-zA-Z]{2,3})$/)
+  if (shortId) return shortId[1].toUpperCase()
   return null
 }
 
@@ -71,35 +82,65 @@ export default function IPTVCatalog() {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
+  const [selectedCountry, setSelectedCountry] = useState<string>("All")
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   )
   const [activeChannel, setActiveChannel] = useState<M3UChannel | null>(null)
   const [totalCount, setTotalCount] = useState(0)
+  const [sourcesLoaded, setSourcesLoaded] = useState(0)
   const searchRef = useRef<HTMLInputElement>(null)
   const channelListRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let cancelled = false
 
-    fetch(M3U_URL, { signal: AbortSignal.timeout(30000) })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.text()
-      })
-      .then((text) => {
-        if (cancelled) return
-        const parsed = parseM3U(text)
-        setChannels(parsed)
-        setTotalCount(parsed.length)
-        setLoading(false)
-      })
-      .catch((err) => {
-        if (cancelled) return
-        setError(err.message || "Failed to load channel list")
-        setLoading(false)
-      })
+    async function fetchAll() {
+      try {
+        const results = await Promise.allSettled(
+          M3U_SOURCES.map((src) =>
+            fetch(src.url, { signal: AbortSignal.timeout(30000) })
+              .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`)
+                return res.text()
+              })
+          )
+        )
 
+        if (cancelled) return
+
+        const seen = new Set<string>()
+        const merged: M3UChannel[] = []
+
+        for (const result of results) {
+          if (result.status === "fulfilled") {
+            const parsed = parseM3U(result.value)
+            for (const ch of parsed) {
+              const key = ch.url.toLowerCase().trim()
+              if (!seen.has(key)) {
+                seen.add(key)
+                merged.push(ch)
+              }
+            }
+          }
+          setSourcesLoaded((p) => p + 1)
+        }
+
+        if (merged.length === 0) {
+          throw new Error("No channels found in any source")
+        }
+
+        setChannels(merged)
+        setTotalCount(merged.length)
+        setLoading(false)
+      } catch (err) {
+        if (cancelled) return
+        setError((err as Error).message || "Failed to load channel list")
+        setLoading(false)
+      }
+    }
+
+    fetchAll()
     return () => { cancelled = true }
   }, [])
 
@@ -109,13 +150,28 @@ export default function IPTVCatalog() {
       cats.set(ch.category, (cats.get(ch.category) || 0) + 1)
     }
     return Array.from(cats.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([, a], [, b]) => b - a)
+  }, [channels])
+
+  const countries = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const ch of channels) {
+      const country = extractCountry(ch)
+      if (country) {
+        map.set(country, (map.get(country) || 0) + 1)
+      }
+    }
+    return Array.from(map.entries())
+      .sort(([, a], [, b]) => b - a)
   }, [channels])
 
   const filtered = useMemo(() => {
     let result = channels
     if (selectedCategory !== "All") {
       result = result.filter((c) => c.category === selectedCategory)
+    }
+    if (selectedCountry !== "All") {
+      result = result.filter((c) => extractCountry(c) === selectedCountry)
     }
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -126,7 +182,7 @@ export default function IPTVCatalog() {
       )
     }
     return result
-  }, [channels, selectedCategory, search])
+  }, [channels, selectedCategory, selectedCountry, search])
 
   const grouped = useMemo(() => {
     const map = new Map<string, M3UChannel[]>()
@@ -151,6 +207,14 @@ export default function IPTVCatalog() {
     searchRef.current?.focus()
   }
 
+  const hasActiveFilters = selectedCategory !== "All" || selectedCountry !== "All"
+
+  const clearAllFilters = () => {
+    setSelectedCategory("All")
+    setSelectedCountry("All")
+    setSearch("")
+  }
+
   return (
     <div className="flex flex-col xl:h-full">
       {/* Header */}
@@ -164,7 +228,7 @@ export default function IPTVCatalog() {
               IPTV Catalog
             </h2>
             <p className={`text-sm ${isDark ? "text-dark-100" : "text-slate-500"}`}>
-              Browse community channels from iptv-org
+              Browse channels from iptv-org & Free-TV
             </p>
           </div>
           {totalCount > 0 && (
@@ -187,7 +251,7 @@ export default function IPTVCatalog() {
               Loading channels
             </p>
             <p className={`text-xs ${isDark ? "text-dark-100" : "text-slate-500"}`}>
-              Fetching ~2.5MB playlist data...
+              Fetching playlists ({sourcesLoaded}/{M3U_SOURCES.length} sources)...
             </p>
           </div>
         </div>
@@ -218,7 +282,7 @@ export default function IPTVCatalog() {
 
       {/* Main Content */}
       {!loading && !error && (
-        <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_420px] gap-4 sm:gap-6 xl:flex-1 xl:min-h-0">
+        <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_380px] gap-4 sm:gap-6 xl:flex-1 xl:min-h-0">
           {/* Channel List */}
           <div className="flex flex-col min-h-0 order-2 xl:order-1">
             {/* Search Bar */}
@@ -239,7 +303,9 @@ export default function IPTVCatalog() {
                 />
                 {search && (
                   <button
+                    type="button"
                     onClick={clearSearch}
+                    aria-label="Clear search"
                     className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors ${
                       isDark ? "hover:bg-white/10 text-dark-100 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-600"
                     }`}
@@ -248,10 +314,21 @@ export default function IPTVCatalog() {
                   </button>
                 )}
               </div>
-              {search && (
-                <p className={`mt-2 text-xs ${isDark ? "text-dark-100" : "text-slate-500"}`}>
-                  Showing {filtered.length.toLocaleString()} results for &quot;{search}&quot;
-                </p>
+              {(search || hasActiveFilters) && (
+                <div className="flex items-center gap-2 mt-2">
+                  <p className={`text-xs ${isDark ? "text-dark-100" : "text-slate-500"}`}>
+                    {filtered.length.toLocaleString()} results
+                    {search && <> for &quot;{search}&quot;</>}
+                  </p>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-[10px] font-medium text-accent hover:text-accent-light transition-colors"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
@@ -266,7 +343,7 @@ export default function IPTVCatalog() {
                     No channels found
                   </p>
                   <p className={`text-xs ${isDark ? "text-dark-100" : "text-slate-500"}`}>
-                    Try adjusting your search or category
+                    Try adjusting your search or filters
                   </p>
                 </div>
               )}
@@ -389,58 +466,16 @@ export default function IPTVCatalog() {
 
           {/* Sidebar */}
           <div className="flex flex-col min-h-0 gap-4 order-1 xl:order-2">
-            {/* Category Filter */}
-            <div
-              className={`rounded-2xl border p-4 ${isDark ? "bg-white/[0.02] border-white/[0.06]" : "bg-white border-slate-200"}`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <div
-                  className={`p-1.5 rounded-lg ${isDark ? "bg-accent/15" : "bg-accent/10"}`}
-                >
-                  <Filter className="w-3.5 h-3.5 text-accent-light" />
-                </div>
-                <h3
-                  className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-dark-100" : "text-slate-500"}`}
-                >
-                  Categories
-                </h3>
-                <span
-                  className={`ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-md ${isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"}`}
-                >
-                  {categories.length}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1 max-h-32 sm:max-h-44 overflow-y-auto pr-1">
-                <button
-                  onClick={() => setSelectedCategory("All")}
-                  className={`px-2 py-1.5 sm:py-1 text-[10px] font-medium rounded-md whitespace-nowrap transition-all duration-200 cursor-pointer min-h-[32px] ${
-                    selectedCategory === "All"
-                      ? "bg-accent text-white shadow-md shadow-accent/20"
-                      : isDark
-                        ? "bg-white/[0.04] text-dark-100 hover:text-white hover:bg-white/[0.08]"
-                        : "bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200"
-                  }`}
-                >
-                  All
-                </button>
-                {categories.map(([cat, count]) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`inline-flex items-center gap-1 px-2 py-1.5 sm:py-1 text-[10px] font-medium rounded-md whitespace-nowrap transition-all duration-200 cursor-pointer min-h-[32px] ${
-                      selectedCategory === cat
-                        ? "bg-accent text-white shadow-md shadow-accent/20"
-                        : isDark
-                          ? "bg-white/[0.04] text-dark-100 hover:text-white hover:bg-white/[0.08]"
-                          : "bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200"
-                    }`}
-                  >
-                    {cat}
-                    <span className="opacity-50">{count}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Compact Filter Panel */}
+            <FilterPanel
+              isDark={isDark}
+              categories={categories}
+              countries={countries}
+              selectedCategory={selectedCategory}
+              selectedCountry={selectedCountry}
+              onSelectCategory={setSelectedCategory}
+              onSelectCountry={setSelectedCountry}
+            />
 
             {/* Player Section */}
             {activeChannel && (
@@ -492,5 +527,213 @@ export default function IPTVCatalog() {
         </div>
       )}
     </div>
+  )
+}
+
+/* ─── Compact Filter Panel ────────────────────────────── */
+
+interface FilterPanelProps {
+  isDark: boolean
+  categories: [string, number][]
+  countries: [string, number][]
+  selectedCategory: string
+  selectedCountry: string
+  onSelectCategory: (cat: string) => void
+  onSelectCountry: (country: string) => void
+}
+
+function FilterPanel({
+  isDark,
+  categories,
+  countries,
+  selectedCategory,
+  selectedCountry,
+  onSelectCategory,
+  onSelectCountry,
+}: FilterPanelProps) {
+  const [openSection, setOpenSection] = useState<"category" | "country" | null>("category")
+  const [countrySearch, setCountrySearch] = useState("")
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return countries
+    const q = countrySearch.toLowerCase()
+    return countries.filter(([name]) => name.toLowerCase().includes(q))
+  }, [countries, countrySearch])
+
+  const toggle = (section: "category" | "country") => {
+    setOpenSection((prev) => (prev === section ? null : section))
+  }
+
+  return (
+    <div
+      className={`rounded-2xl border overflow-hidden ${
+        isDark ? "bg-white/[0.02] border-white/[0.06]" : "bg-white border-slate-200"
+      }`}
+    >
+      {/* Panel Header */}
+      <div className={`flex items-center gap-2 px-4 py-3 border-b ${isDark ? "border-white/5" : "border-slate-100"}`}>
+        <SlidersHorizontal className="w-3.5 h-3.5 text-accent-light" />
+        <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-dark-100" : "text-slate-500"}`}>
+          Filters
+        </span>
+        <span
+          className={`ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
+            isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"
+          }`}
+        >
+          {categories.length + countries.length}
+        </span>
+      </div>
+
+      {/* Category Section */}
+      <div className={`border-b ${isDark ? "border-white/5" : "border-slate-100"}`}>
+        <button
+          onClick={() => toggle("category")}
+          className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors ${
+            isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Filter className="w-3 h-3 text-accent-light" />
+            <span className={`text-xs font-medium ${isDark ? "text-white" : "text-slate-700"}`}>
+              Category
+            </span>
+            {selectedCategory !== "All" && (
+              <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-accent text-white rounded-full">
+                1
+              </span>
+            )}
+          </div>
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+              openSection === "category" ? "rotate-180" : ""
+            } ${isDark ? "text-dark-100" : "text-slate-400"}`}
+          />
+        </button>
+
+        {openSection === "category" && (
+          <div className="px-3 pb-3">
+            <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto pr-1">
+              <PillButton
+                label="All"
+                count={categories.reduce((s, [, c]) => s + c, 0)}
+                active={selectedCategory === "All"}
+                onClick={() => onSelectCategory("All")}
+                isDark={isDark}
+              />
+              {categories.map(([cat, count]) => (
+                <PillButton
+                  key={cat}
+                  label={cat}
+                  count={count}
+                  active={selectedCategory === cat}
+                  onClick={() => onSelectCategory(cat)}
+                  isDark={isDark}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Country Section */}
+      <div>
+        <button
+          onClick={() => toggle("country")}
+          className={`w-full flex items-center justify-between px-4 py-2.5 transition-colors ${
+            isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Globe className="w-3 h-3 text-accent-light" />
+            <span className={`text-xs font-medium ${isDark ? "text-white" : "text-slate-700"}`}>
+              Country
+            </span>
+            {selectedCountry !== "All" && (
+              <span className="px-1.5 py-0.5 text-[9px] font-semibold bg-accent text-white rounded-full">
+                1
+              </span>
+            )}
+          </div>
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${
+              openSection === "country" ? "rotate-180" : ""
+            } ${isDark ? "text-dark-100" : "text-slate-400"}`}
+          />
+        </button>
+
+        {openSection === "country" && (
+          <div className="px-3 pb-3">
+            {countries.length > 15 && (
+              <div className="relative mb-2">
+                <Search className={`absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 ${isDark ? "text-dark-100" : "text-slate-400"}`} />
+                <input
+                  type="text"
+                  placeholder="Search countries..."
+                  value={countrySearch}
+                  onChange={(e) => setCountrySearch(e.target.value)}
+                  className={`w-full pl-7 pr-3 py-1.5 rounded-lg text-[11px] focus:outline-none focus:ring-1 focus:ring-accent/30 transition-all ${
+                    isDark
+                      ? "bg-white/[0.04] border border-white/[0.06] text-white placeholder-dark-100"
+                      : "bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400"
+                  }`}
+                />
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1 max-h-40 overflow-y-auto pr-1">
+              <PillButton
+                label="All"
+                count={countries.reduce((s, [, c]) => s + c, 0)}
+                active={selectedCountry === "All"}
+                onClick={() => onSelectCountry("All")}
+                isDark={isDark}
+              />
+              {filteredCountries.map(([country, count]) => (
+                <PillButton
+                  key={country}
+                  label={country}
+                  count={count}
+                  active={selectedCountry === country}
+                  onClick={() => onSelectCountry(country)}
+                  isDark={isDark}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ─── Pill Button ────────────────────────────────────── */
+
+function PillButton({
+  label,
+  count,
+  active,
+  onClick,
+  isDark,
+}: {
+  label: string
+  count: number
+  active: boolean
+  onClick: () => void
+  isDark: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md whitespace-nowrap transition-all duration-150 cursor-pointer min-h-[26px] ${
+        active
+          ? "bg-accent text-white shadow-sm shadow-accent/20"
+          : isDark
+            ? "bg-white/[0.04] text-dark-100 hover:text-white hover:bg-white/[0.08]"
+            : "bg-slate-100 text-slate-500 hover:text-slate-900 hover:bg-slate-200"
+      }`}
+    >
+      {label}
+      <span className="opacity-50">{count}</span>
+    </button>
   )
 }
