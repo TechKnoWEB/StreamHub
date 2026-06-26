@@ -10,9 +10,11 @@ import {
   Heart,
   ArrowRight,
   Play,
-  Wifi,
   Search,
   Scale,
+  Music,
+  Headphones,
+  ListMusic,
 } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 import type { Tab } from "../App"
@@ -49,13 +51,22 @@ const destinations = [
     metric: "9",
     metricLabel: "sports",
   },
+  {
+    id: "music" as Tab,
+    icon: Music,
+    title: "Stream Music",
+    description: "YouTube Music search, 45K+ radio stations, playlists & more.",
+    color: "text-purple-400",
+    metric: "45K+",
+    metricLabel: "stations",
+  },
 ]
 
 const stats = [
   { label: "IPTV channels", value: "4000+", icon: Radio, color: "text-accent-light" },
+  { label: "Radio stations", value: "45K+", icon: Headphones, color: "text-purple-400" },
   { label: "Sports categories", value: "9", icon: Trophy, color: "text-sport-yellow" },
   { label: "Open source", value: "100%", icon: Heart, color: "text-sport-red" },
-  { label: "Live-ready", value: "HLS", icon: Wifi, color: "text-sport-green" },
 ]
 
 const sourceCards = [
@@ -83,6 +94,45 @@ const sourceCards = [
     tags: ["REST API", "Streams", "Sports"],
     tone: "text-sport-yellow",
   },
+  {
+    title: "Radio Browser API",
+    href: "https://www.radio-browser.info",
+    icon: Headphones,
+    description: "Free, open-source database of 45,000+ internet radio stations worldwide.",
+    tags: ["REST API", "45K+ stations", "No auth"],
+    tone: "text-purple-400",
+  },
+  {
+    title: "Invidious API",
+    href: "https://invidious.io",
+    icon: Music,
+    description: "Privacy-friendly YouTube frontend for music search without API keys.",
+    tags: ["YouTube", "No auth", "Privacy"],
+    tone: "text-pink-400",
+  },
+]
+
+const musicFeatures = [
+  {
+    icon: Headphones,
+    title: "Internet Radio",
+    desc: "45,000+ stations from 200+ countries. Browse by genre, country, or search.",
+  },
+  {
+    icon: Music,
+    title: "YouTube Music",
+    desc: "Search and play YouTube music directly in the browser via Invidious.",
+  },
+  {
+    icon: ListMusic,
+    title: "Playlists & Queue",
+    desc: "Create playlists, manage queue, play next, shuffle & repeat.",
+  },
+  {
+    icon: Heart,
+    title: "Favorites & History",
+    desc: "Save favorites and recently played tracks. All persisted locally.",
+  },
 ]
 
 export default function HomePage({ onNavigate }: HomePageProps) {
@@ -98,6 +148,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6 xl:h-full">
+      {/* Hero Section */}
       <section className={`rounded-2xl border p-4 sm:p-5 ${panelClass}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3 sm:gap-4 min-w-0">
@@ -109,7 +160,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                 StreamHub
               </h1>
               <p className={`mt-1 max-w-2xl text-sm sm:text-base ${mutedText}`}>
-                IPTV, channel discovery, and live sports in one focused dashboard.
+                IPTV, channel discovery, live sports, and music streaming — all in one focused dashboard.
               </p>
             </div>
           </div>
@@ -121,6 +172,13 @@ export default function HomePage({ onNavigate }: HomePageProps) {
             >
               <Play className="w-4 h-4" />
               Watch
+            </button>
+            <button
+              onClick={() => onNavigate("music")}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 transition-all hover:from-purple-600 hover:to-pink-600"
+            >
+              <Music className="w-4 h-4" />
+              Listen
             </button>
             <button
               onClick={() => onNavigate("catalog")}
@@ -137,6 +195,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
+      {/* Stats Grid */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => (
           <div
@@ -158,6 +217,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         ))}
       </section>
 
+      {/* Open A Section */}
       <section>
         <div className="flex items-center gap-2 mb-3">
           <Zap className={`w-4 h-4 ${mutedText}`} />
@@ -166,7 +226,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {destinations.map((item) => (
             <button
               key={item.id}
@@ -205,6 +265,38 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
+      {/* Stream Music Features */}
+      <section className={`rounded-2xl border p-4 sm:p-5 ${panelClass}`}>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <Music className="w-4 h-4 text-white" />
+          </div>
+          <h2 className={`text-sm font-semibold uppercase tracking-wider ${mutedText}`}>
+            Stream Music — Free Music Portal
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {musicFeatures.map((f) => (
+            <div key={f.title} className={`flex items-start gap-3 p-3 rounded-xl ${isDark ? "bg-white/[0.03]" : "bg-slate-50"}`}>
+              <f.icon className={`w-5 h-5 shrink-0 mt-0.5 ${isDark ? "text-purple-400" : "text-purple-500"}`} />
+              <div>
+                <p className={`text-sm font-bold ${strongText}`}>{f.title}</p>
+                <p className={`text-xs mt-0.5 leading-relaxed ${mutedText}`}>{f.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => onNavigate("music")}
+          className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold shadow-lg shadow-purple-500/20 transition-all hover:from-purple-600 hover:to-pink-600"
+        >
+          <Headphones className="w-4 h-4" />
+          Open Stream Music
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </section>
+
+      {/* Data Sources */}
       <section>
         <div className="flex items-center gap-2 mb-3">
           <Heart className={`w-4 h-4 ${mutedText}`} />
@@ -213,7 +305,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {sourceCards.map((source) => (
             <div
               key={source.title}
@@ -261,6 +353,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
+      {/* Legal */}
       <section
         className={`rounded-2xl border p-4 sm:p-5 ${
           isDark ? "bg-dark-300/30 border-white/[0.06]" : "bg-white border-slate-200"

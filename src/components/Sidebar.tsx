@@ -1,10 +1,10 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Tv, Monitor, Trophy, Sun, Moon, Home, TvMinimalPlay, X } from "lucide-react"
+import { Tv, Monitor, Trophy, Sun, Moon, Home, TvMinimalPlay, Music, X } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 
-type Tab = "home" | "iptv" | "catalog" | "sports" | "legal"
+type Tab = "home" | "iptv" | "catalog" | "sports" | "music" | "legal"
 
 interface SidebarProps {
   activeTab: Tab
@@ -18,6 +18,7 @@ const navItems: { id: Tab; label: string; icon: React.ComponentType<{ className?
   { id: "iptv", label: "Live Streams", icon: Tv },
   { id: "catalog", label: "IPTV Channels", icon: TvMinimalPlay },
   { id: "sports", label: "Live Sports", icon: Trophy },
+  { id: "music", label: "Stream Music", icon: Music },
 ]
 
 const SPRING_CONFIG = { type: "spring" as const, stiffness: 380, damping: 30 }
@@ -56,19 +57,14 @@ export default function Sidebar({ activeTab, onTabChange, isOpen, onClose }: Sid
         aria-hidden="true"
       />
 
-      {/* Sidebar */}
       <motion.aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 flex flex-col shrink-0
-          lg:static lg:z-auto
+        className={`fixed top-0 left-0 z-50 h-full w-64 flex flex-col shrink-0 transition-transform duration-300 ease-out
+          lg:static lg:z-auto lg:translate-x-0
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
           ${isDark
             ? "glass border-r border-white/5"
             : "bg-white/80 backdrop-blur-xl border-r border-slate-200"
           }`}
-        initial={false}
-        animate={{
-          x: isOpen || (typeof window !== "undefined" && window.innerWidth >= 1024) ? 0 : -256,
-        }}
-        transition={SPRING_CONFIG}
       >
         {/* Logo */}
         <div className={`p-6 border-b flex items-center justify-between ${isDark ? "border-white/5" : "border-slate-200"}`}>
