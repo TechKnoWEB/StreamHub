@@ -273,6 +273,7 @@ export default function LiveSports() {
       }
 
       // Find the match across all categories
+      if (!json) throw new Error("No API data available")
       const allCategories = ["football", "basketball", "amfootball", "baseball", "badminton", "volleyball", "tennis", "race", "fight", "hockey", "rugby", "cricket", "other"]
       let foundMatch: { slug: string; tag: string; kickoff: string; endTime: string; poster: string | null; league: string; iframes: Array<{ server: string; url: string }> } | null = null
       for (const cat of allCategories) {
