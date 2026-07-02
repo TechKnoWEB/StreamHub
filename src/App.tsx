@@ -9,11 +9,12 @@ import LiveStreams from "./components/LiveStreams"
 import IPTVChannels from "./components/IPTVChannels"
 import LiveSports from "./components/LiveSports"
 import LegalDisclaimer from "./components/LegalDisclaimer"
+import AboutPage from "./components/AboutPage"
 import MusicPortal from "./music/components/MusicPortal"
 
-export type Tab = "home" | "iptv" | "catalog" | "sports" | "music" | "legal"
+export type Tab = "home" | "iptv" | "catalog" | "sports" | "music" | "about" | "legal"
 
-const VALID_TABS: Tab[] = ["home", "iptv", "catalog", "sports", "music", "legal"]
+const VALID_TABS: Tab[] = ["home", "iptv", "catalog", "sports", "music", "about", "legal"]
 
 function getInitialTab(): Tab {
   const hash = window.location.hash.replace("#", "")
@@ -63,6 +64,8 @@ function AppShell() {
         return <LiveSports key="sports" />
       case "music":
         return <MusicPortal key="music" />
+      case "about":
+        return <AboutPage key="about" onNavigate={setActiveTab} />
       case "legal":
         return <LegalDisclaimer key="legal" />
       default:
@@ -119,7 +122,7 @@ function AppShell() {
               animate="animate"
               exit="exit"
               transition={CONTENT_TRANSITION}
-              className="h-full"
+              className="min-h-full"
             >
               {renderContent()}
             </motion.div>
