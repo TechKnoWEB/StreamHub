@@ -153,12 +153,14 @@ npm run preview
 src/
 ├── components/
 │   ├── HomePage.tsx              # Landing page with features & data sources
-│   ├── LiveStreams.tsx            # Curated IPTV channel player + live match embed
-│   ├── IPTVChannels.tsx          # Multi-source channel catalog with filters
+│   ├── LiveStreams.tsx           # Curated IPTV channel player + live match embed
+│   ├── IPTVChannels.tsx          # Multi-source channel catalogue with filters
 │   ├── LiveSports.tsx            # Live sports streams & match schedules
 │   ├── LegalDisclaimer.tsx       # Legal & terms page
 │   ├── Sidebar.tsx               # Navigation sidebar
 │   └── VideoPlayer.tsx           # HLS video player component
+|   └── AboutPage.tsx             # About Project
+|   └── SportsPlayer.tsx          # LiveSports Video player component
 ├── music/
 │   ├── types.ts                  # Music-specific TypeScript interfaces
 │   ├── MusicContext.tsx           # Global music state + Media Session API
