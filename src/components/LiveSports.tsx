@@ -348,6 +348,11 @@ export default function LiveSports() {
       }
 
       if (requestId !== detailRequestIdRef.current) return
+      sources.forEach((s) => {
+        if (s.embedUrl) {
+          s.embedUrl = s.embedUrl.replace(/^http:\/\//i, "https://")
+        }
+      })
       setDetail({ ...match, sources })
       if (sources.length) setActiveSource(sources[0])
     } catch (err: unknown) {
