@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Loader2, WifiOff, RefreshCw } from "lucide-react"
+import { Loader2, WifiOff, RefreshCw, ExternalLink } from "lucide-react"
 import VideoPlayer from "./VideoPlayer"
 
 export interface StreamSource {
@@ -20,7 +20,7 @@ interface SportsPlayerProps {
   fillContainer?: boolean
 }
 
-const IFRAME_TIMEOUT_MS = 12000
+const IFRAME_TIMEOUT_MS = 25000
 const RETRY_COOLDOWN_MS = 30000
 
 function isDirectStream(url: string): boolean {
@@ -47,6 +47,7 @@ export default function SportsPlayer({
   const currentSource = activeSource && sources.some((s) => s.streamNo === activeSource.streamNo && s.id === activeSource.id)
     ? activeSource
     : availableSources[0] || null
+  const firstSourceUrl = sources[0]?.embedUrl || null
 
   useEffect(() => {
     mountedRef.current = true
@@ -165,6 +166,17 @@ export default function SportsPlayer({
               <RefreshCw className="w-4 h-4" />
               Retry All Sources
             </button>
+            {firstSourceUrl && (
+              <a
+                href={firstSourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/15 text-white text-sm font-semibold rounded-xl transition-colors ml-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open in Tab
+              </a>
+            )}
           </div>
         </div>
       )}
