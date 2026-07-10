@@ -103,7 +103,7 @@ function findLiveOrApproachingMatch(matches: Array<{ slug: string; kickoff: stri
 
 async function fetchFromEmbedSportex(): Promise<{ match: LiveMatch | null; upcoming: { title: string; date: number; teams: { home: { name: string; badge: string }; away: { name: string; badge: string } } } | null }> {
   const res = await fetch(EMBEDSPORTEX_API, {
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(8000),
   })
   if (!res.ok) throw new Error(`EmbedSportex HTTP ${res.status}`)
   const json = await res.json()
