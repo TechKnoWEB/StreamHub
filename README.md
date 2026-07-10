@@ -44,11 +44,22 @@ A free, open-source dashboard for streaming live TV, browsing community playlist
 - **Responsive Design** — Mobile-first design. Optimized for phones, tablets, and desktop.
 
 ---
-## Screenshots
-<img width="1431" height="759" alt="image" src="https://github.com/user-attachments/assets/db785ace-ffc6-4959-8bf4-19a20f29cb94" />
-<img width="1433" height="756" alt="image" src="https://github.com/user-attachments/assets/5b6953e6-45f6-4d34-9350-9e86d856dafc" />
-<img width="1433" height="759" alt="image" src="https://github.com/user-attachments/assets/78c646b2-fdd1-4247-ba18-679ea277d3ed" />
 
+## Keyboard Shortcuts (Music Player)
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play / Pause |
+| `←` | Seek -10s |
+| `→` | Seek +10s |
+| `Shift+←` | Previous track |
+| `Shift+→` | Next track |
+| `↑` / `↓` | Volume up/down |
+| `M` | Mute toggle |
+| `S` | Shuffle toggle |
+| `R` | Repeat cycle (none → all → one) |
+
+---
 
 ## Mobile & Responsive
 
@@ -114,13 +125,12 @@ Powered by the **Media Session API** — the same technology used by Spotify and
 - [Node.js](https://nodejs.org/) 18+ (recommended 20+)
 - npm or yarn or pnpm
 
-
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/TechKnoWEB/StreamHub.git
-cd StreamHub
+git clone https://github.com/your-username/iptv-dashboard.git
+cd iptv-dashboard
 
 # Install dependencies
 npm install
@@ -153,14 +163,12 @@ npm run preview
 src/
 ├── components/
 │   ├── HomePage.tsx              # Landing page with features & data sources
-│   ├── LiveStreams.tsx           # Curated IPTV channel player + live match embed
-│   ├── IPTVChannels.tsx          # Multi-source channel catalogue with filters
+│   ├── LiveStreams.tsx            # Curated IPTV channel player + live match embed
+│   ├── IPTVChannels.tsx          # Multi-source channel catalog with filters
 │   ├── LiveSports.tsx            # Live sports streams & match schedules
 │   ├── LegalDisclaimer.tsx       # Legal & terms page
 │   ├── Sidebar.tsx               # Navigation sidebar
 │   └── VideoPlayer.tsx           # HLS video player component
-|   └── AboutPage.tsx             # About Project
-|   └── SportsPlayer.tsx          # LiveSports Video player component
 ├── music/
 │   ├── types.ts                  # Music-specific TypeScript interfaces
 │   ├── MusicContext.tsx           # Global music state + Media Session API
@@ -254,4 +262,3 @@ This project is open source and available under the [MIT License](LICENSE).
 - [Lucide](https://lucide.dev) — Beautiful open-source icons
 - [Tailwind CSS](https://tailwindcss.com) — Utility-first CSS framework
 - [Framer Motion](https://www.framer.com/motion/) — Animation library for React
-

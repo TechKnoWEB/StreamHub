@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Tv, Monitor, Trophy, Sun, Moon, Home, TvMinimalPlay, Music, X, Info } from "lucide-react"
 import { useTheme } from "../context/ThemeContext"
 
-type Tab = "home" | "iptv" | "catalog" | "sports" | "music" | "about" | "legal"
+type Tab = "home" | "iptv" | "catalog" | "sports" | "music" | "about" | "legal" | "sports-src"
 
 interface SidebarProps {
   activeTab: Tab

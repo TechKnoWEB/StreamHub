@@ -158,20 +158,21 @@ function normalizeEsportex(raw: any): Match & { _iframes: any[] } {
 }
 
 async function fetchEsportex(category: string): Promise<ReturnType<typeof normalizeEsportex>[]> {
-  const cacheKey = `esportex_${category}`
-  const cached = getCached<ReturnType<typeof normalizeEsportex>[]>(cacheKey)
-  if (cached) return cached
+  const FULL_CACHE_KEY = "esportex_full"
+  let json: any = getCached<any>(FULL_CACHE_KEY)
+
+  if (!json) {
+    const res = await fetch(`${APIS.esportex.base}/streams`, {
+      signal: AbortSignal.timeout(API_TIMEOUT),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    json = await res.json()
+    if (!json?.success) throw new Error("API returned unsuccessful response")
+    setCache(FULL_CACHE_KEY, json)
+  }
 
   const apiCat = CATEGORY_MAP[category]?.esportex || category
-  const res = await fetch(`${APIS.esportex.base}/streams`, {
-    signal: AbortSignal.timeout(API_TIMEOUT),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const json = await res.json()
-  if (!json?.success) throw new Error("API returned unsuccessful response")
-  const data = (json[apiCat] || []).map(normalizeEsportex)
-  setCache(cacheKey, data)
-  return data
+  return (json[apiCat] || []).map(normalizeEsportex)
 }
 
 async function fetchMatchesWithFallback(category: string): Promise<{
