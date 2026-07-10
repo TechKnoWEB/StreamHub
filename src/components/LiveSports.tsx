@@ -38,6 +38,38 @@ const APIS = {
   esportex:   { base: "https://api.esportex.site/api" },
 }
 
+const CACHE_TTL = 120_000 // 2 min cache
+const API_TIMEOUT = 6_000 // 6s timeout per API call
+
+interface CacheEntry<T> {
+  data: T
+  ts: number
+}
+
+function getCached<T>(key: string): T | null {
+  try {
+    const raw = sessionStorage.getItem(`ls_cache_${key}`)
+    if (!raw) return null
+    const entry: CacheEntry<T> = JSON.parse(raw)
+    if (Date.now() - entry.ts > CACHE_TTL) {
+      sessionStorage.removeItem(`ls_cache_${key}`)
+      return null
+    }
+    return entry.data
+  } catch {
+    return null
+  }
+}
+
+function setCache<T>(key: string, data: T) {
+  try {
+    const entry: CacheEntry<T> = { data, ts: Date.now() }
+    sessionStorage.setItem(`ls_cache_${key}`, JSON.stringify(entry))
+  } catch {
+    // sessionStorage full or unavailable, ignore
+  }
+}
+
 const CATEGORY_MAP: Record<string, { streamfree: string; esportex: string }> = {
   football:          { streamfree: "soccer",       esportex: "football" },
   cricket:           { streamfree: "cricket",      esportex: "cricket" },
@@ -92,13 +124,19 @@ function normalizeStreamFree(raw: any): Match & { _viewers: number; _embedUrl: s
 }
 
 async function fetchStreamFree(category: string): Promise<ReturnType<typeof normalizeStreamFree>[]> {
+  const cacheKey = `streamfree_${category}`
+  const cached = getCached<ReturnType<typeof normalizeStreamFree>[]>(cacheKey)
+  if (cached) return cached
+
   const apiCat = CATEGORY_MAP[category]?.streamfree || category
   const res = await fetch(`${APIS.streamfree.base}/streams?category=${apiCat}`, {
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(API_TIMEOUT),
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   const json = await res.json()
-  return (json.streams || []).map(normalizeStreamFree)
+  const data = (json.streams || []).map(normalizeStreamFree)
+  setCache(cacheKey, data)
+  return data
 }
 
 // ESportex → normalized Match
@@ -119,21 +157,21 @@ function normalizeEsportex(raw: any): Match & { _iframes: any[] } {
   }
 }
 
-let esportexCache: any = null
-
 async function fetchEsportex(category: string): Promise<ReturnType<typeof normalizeEsportex>[]> {
+  const cacheKey = `esportex_${category}`
+  const cached = getCached<ReturnType<typeof normalizeEsportex>[]>(cacheKey)
+  if (cached) return cached
+
   const apiCat = CATEGORY_MAP[category]?.esportex || category
-  let json = esportexCache
-  if (!json) {
-    const res = await fetch(`${APIS.esportex.base}/streams`, {
-      signal: AbortSignal.timeout(12000),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    json = await res.json()
-    if (json?.success) esportexCache = json
-  }
+  const res = await fetch(`${APIS.esportex.base}/streams`, {
+    signal: AbortSignal.timeout(API_TIMEOUT),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  const json = await res.json()
   if (!json?.success) throw new Error("API returned unsuccessful response")
-  return (json[apiCat] || []).map(normalizeEsportex)
+  const data = (json[apiCat] || []).map(normalizeEsportex)
+  setCache(cacheKey, data)
+  return data
 }
 
 async function fetchMatchesWithFallback(category: string): Promise<{
@@ -141,25 +179,38 @@ async function fetchMatchesWithFallback(category: string): Promise<{
   matchMeta: Map<string, { source: string; viewers: number; embedUrl?: string; iframes?: any[] }>
 }> {
   const meta = new Map<string, { source: string; viewers: number; embedUrl?: string; iframes?: any[] }>()
+  const seenTitles = new Set<string>()
 
-  try {
-    const raw = await fetchStreamFree(category)
-    if (raw.length > 0) {
-      raw.forEach((m) => {
-        meta.set(m.id, { source: "streamfree", viewers: m._viewers, embedUrl: m._embedUrl })
-        delete (m as any)._viewers
-        delete (m as any)._embedUrl
-      })
-      return { matches: raw, matchMeta: meta }
-    }
-  } catch {}
+  const [sfRaw, esRaw] = await Promise.all([
+    fetchStreamFree(category).catch(() => [] as ReturnType<typeof normalizeStreamFree>[]),
+    fetchEsportex(category).catch(() => [] as ReturnType<typeof normalizeEsportex>[]),
+  ])
 
-  const raw = await fetchEsportex(category)
-  raw.forEach((m) => {
+  const allMatches: Match[] = []
+
+  // StreamFree first — preferred source
+  for (const m of sfRaw) {
+    const key = m.title?.toLowerCase().trim()
+    if (key) seenTitles.add(key)
+    meta.set(m.id, { source: "streamfree", viewers: m._viewers, embedUrl: m._embedUrl })
+    const match = { ...m }
+    delete (match as any)._viewers
+    delete (match as any)._embedUrl
+    allMatches.push(match)
+  }
+
+  // ESportex — skip if same match already exists from StreamFree (by title)
+  for (const m of esRaw) {
+    const key = m.title?.toLowerCase().trim()
+    if (key && seenTitles.has(key)) continue
+    if (key) seenTitles.add(key)
     meta.set(m.id, { source: "esportex", viewers: 0, iframes: m._iframes })
-    delete (m as any)._iframes
-  })
-  return { matches: raw, matchMeta: meta }
+    const match = { ...m }
+    delete (match as any)._iframes
+    allMatches.push(match)
+  }
+
+  return { matches: allMatches, matchMeta: meta }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
