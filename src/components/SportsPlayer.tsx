@@ -20,8 +20,8 @@ interface SportsPlayerProps {
   fillContainer?: boolean
 }
 
-const IFRAME_TIMEOUT_MS = 25000
-const RETRY_COOLDOWN_MS = 30000
+const IFRAME_TIMEOUT_MS = 12000
+const RETRY_COOLDOWN_MS = 15000
 
 function isDirectStream(url: string): boolean {
   return /\.(m3u8|mp4|webm)(\?|$)/i.test(url)
