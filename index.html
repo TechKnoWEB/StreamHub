@@ -2,16 +2,66 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📺</text></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+    <link rel="mask-icon" href="/icons/icon-maskable.svg" color="#0f0f1a" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#0f0f1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="StreamHub" />
+    <meta name="application-name" content="StreamHub" />
+    <meta name="description" content="Watch live TV channels, sports streams, and 45K+ radio stations worldwide" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#0f0f1a" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="color-scheme" content="dark" />
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="StreamHub — IPTV Dashboard" />
+    <meta property="og:description" content="Watch live TV channels, sports streams, and 45K+ radio stations worldwide" />
+    <meta property="og:image" content="/icons/icon.svg" />
+    
+    <!-- iOS splash screens -->
+    <meta name="apple-touch-startup-image" content="/icons/icon.svg" />
+    
     <title>StreamHub — IPTV Dashboard</title>
+    
     <link rel="dns-prefetch" href="https://streamfree.top" />
     <link rel="dns-prefetch" href="https://api.esportex.site" />
     <link rel="preconnect" href="https://streamfree.top" />
     <link rel="preconnect" href="https://api.esportex.site" />
+    
+    <style>
+      /* PWA-specific styles for mobile app feel */
+      @media all and (display-mode: standalone) {
+        body {
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+        }
+      }
+      
+      /* Prevent text selection on app-like elements */
+      .no-select {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Smooth scrolling for mobile */
+      @media (max-width: 768px) {
+        html {
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

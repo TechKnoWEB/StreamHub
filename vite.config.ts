@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from "vite"
 import react from "@vitejs/plugin-react"
+import { VitePWA } from "vite-plugin-pwa"
 
 function rewritePlaylist(body: string, targetUrl: string, proxyEndpoint: string): string {
   const proxy = (url: string) => proxyEndpoint + encodeURIComponent(new URL(url, targetUrl).href)
@@ -67,5 +68,77 @@ function iptvProxy(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), iptvProxy()],
+  plugins: [
+    react(),
+    iptvProxy(),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["icons/icon.svg"],
+      manifest: {
+        name: "StreamHub — IPTV Dashboard",
+        short_name: "StreamHub",
+        description: "Watch live TV channels, sports streams, and 45K+ radio stations worldwide",
+        theme_color: "#0f0f1a",
+        background_color: "#0f0f1a",
+        display: "standalone",
+        orientation: "any",
+        scope: "/",
+        start_url: "/",
+        categories: ["entertainment", "sports", "news", "music"],
+        icons: [
+          {
+            src: "icons/icon.svg",
+            sizes: "any",
+            type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "icons/icon-maskable.svg",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "maskable",
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/iptv-org\.github\.io\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "iptv-sources",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60, // 1 hour
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/raw\.githubusercontent\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "github-sources",
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/.*\.m3u8$/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "hls-streams",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5, // 5 minutes
+              },
+              networkTimeoutSeconds: 3,
+            },
+          },
+        ],
+      },
+    }),
+  ],
 })
