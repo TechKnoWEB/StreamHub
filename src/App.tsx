@@ -12,6 +12,7 @@ import LiveSportsSRC from "./components/LiveSportsSRC"
 import LegalDisclaimer from "./components/LegalDisclaimer"
 import AboutPage from "./components/AboutPage"
 import MusicPortal from "./music/components/MusicPortal"
+import PWAInstallBanner from "./components/PWAInstallBanner"
 
 export type Tab = "home" | "iptv" | "catalog" | "sports" | "music" | "about" | "legal" | "sports-src"
 
@@ -132,6 +133,9 @@ function AppShell() {
           </AnimatePresence>
         </main>
       </div>
+      
+      {/* PWA Install Banner */}
+      <PWAInstallBanner />
     </div>
   )
 }
