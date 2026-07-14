@@ -18,24 +18,52 @@ import type { Channel } from "../types"
 
 const channels: Channel[] = [
   {
-    id: "bein-xtra",
-    name: "beIN SPORTS XTRA",
-    url: "https://bein-xtra-bein.amagi.tv/playlist.m3u8",
-    category: "Sports",
+    id: "tsn1",
+    name: "TSN1",
+    url: "http://40.160.24.55/TSN_1/index.m3u8",
+    category: "TSN",
     quality: "FHD",
   },
   {
-    id: "caze-tv",
-    name: "Caze TV BR (FIFA World Cup)",
-    url: "https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/Caze_TV.m3u8",
-    category: "Sports",
+    id: "tsn2",
+    name: "TSN2",
+    url: "http://40.160.24.55/TSN_2/index.m3u8",
+    category: "TSN",
+    quality: "FHD",
+  },
+  {
+    id: "tsn3",
+    name: "TSN3",
+    url: "http://40.160.24.55/TSN_3/index.m3u8",
+    category: "TSN",
+    quality: "FHD",
+  },
+  {
+    id: "tsn4",
+    name: "TSN4",
+    url: "http://40.160.24.55/TSN_4/index.m3u8",
+    category: "TSN",
+    quality: "FHD",
+  },
+  {
+    id: "tsn5",
+    name: "TSN5",
+    url: "http://40.160.24.55/TSN_5/index.m3u8",
+    category: "TSN",
     quality: "HD",
   },
   {
-    id: "ct-sport",
-    name: "CT Sport 25p (FIFA World Cup)",
-    url: "http://88.212.15.19/live/test_ctsport_25p/playlist.m3u8",
-    category: "Sports",
+    id: "fs1",
+    name: "Fox Sports 1",
+    url: "http://85.237.89.160:9590/usa-s/FOX-SPORTS-1/index.m3u8",
+    category: "Fox Sports",
+    quality: "FHD",
+  },
+  {
+    id: "fox-soccer-plus",
+    name: "Fox Soccer Plus",
+    url: "http://40.160.24.52/FOX_SOCCER_PLUS/index.m3u8",
+    category: "Fox Sports",
     quality: "HD",
   },
 ]
@@ -178,7 +206,7 @@ export default function LiveStreams() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 xl:flex-1 xl:min-h-0">
         {/* Player Section */}
         <div className="xl:col-span-2 flex flex-col min-h-0">
-          <div className="aspect-video sm:aspect-[16/9] md:aspect-[3/2] w-full rounded-2xl overflow-hidden bg-black border border-white/5 xl:aspect-auto xl:flex-1 xl:min-h-0 relative">
+          <div className="aspect-video sm:aspect-[16/9] md:aspect-[3/2] w-full rounded-2xl overflow-hidden bg-black border border-white/5 xl:aspect-auto xl:h-[480px] relative">
             {watchingLive && liveMatch ? (
               liveMatch.sources.length > 0 ? (
                 <SportsPlayer
