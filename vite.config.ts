@@ -74,6 +74,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["icons/icon.svg"],
+      devOptions: { enabled: true },
       manifest: {
         name: "StreamHub — IPTV Dashboard",
         short_name: "StreamHub",

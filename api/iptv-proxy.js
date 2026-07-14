@@ -1,3 +1,5 @@
+import { Readable } from "stream"
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*")
   res.setHeader("Access-Control-Allow-Credentials", "true")
@@ -38,8 +40,19 @@ export default async function handler(req, res) {
       res.end(rewritten)
     } else {
       res.setHeader("Content-Type", proxyRes.headers.get("content-type") || "video/MP2T")
-      const buffer = Buffer.from(await proxyRes.arrayBuffer())
-      res.end(buffer)
+      const reader = proxyRes.body.getReader()
+      const nodeStream = new Readable({
+        async read() {
+          try {
+            const { done, value } = await reader.read()
+            if (done) { this.push(null); return }
+            this.push(Buffer.from(value))
+          } catch (e) {
+            this.destroy(e)
+          }
+        },
+      })
+      nodeStream.pipe(res)
     }
   } catch (e) {
     res.status(502).end(`IPTV proxy error: ${e.message || e}`)

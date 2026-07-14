@@ -14,6 +14,11 @@ export default function PWAInstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    try { if (sessionStorage.getItem("pwa-dismissed")) setDismissed(true) } catch {}
+  }, [])
 
   useEffect(() => {
     // Check if already installed
@@ -64,10 +69,7 @@ export default function PWAInstallBanner() {
     sessionStorage.setItem("pwa-dismissed", "true")
   }
 
-  // Don't show if already installed or dismissed
-  if (isInstalled || sessionStorage.getItem("pwa-dismissed")) {
-    return null
-  }
+  if (isInstalled || dismissed) return null
 
   return (
     <AnimatePresence>

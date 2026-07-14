@@ -66,14 +66,6 @@
 }
 
 @layer components {
-  .btn-primary {
-    @apply px-6 py-2.5 bg-gradient-to-r from-accent to-accent-dark
-           text-white font-semibold rounded-xl
-           hover:from-accent-light hover:to-accent
-           transition-all duration-300 shadow-lg shadow-accent/25
-           active:scale-95;
-  }
-
   /* Dark mode card */
   html.dark .card {
     @apply bg-dark-300/50 backdrop-blur-sm rounded-2xl border border-dark-400/50 shadow-xl;
@@ -94,9 +86,6 @@
     @apply bg-white/70 backdrop-blur-xl border border-slate-200;
   }
 
-  .gradient-text {
-    @apply bg-gradient-to-r from-accent-light to-sport-green bg-clip-text text-transparent;
-  }
 }
 
 /* Scrollbar hide utility */
@@ -115,13 +104,6 @@
 
 .safe-area-top {
   padding-top: env(safe-area-inset-top, 0px);
-}
-
-/* Mobile drawer backdrop */
-.drawer-backdrop {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 /* Smooth scroll snap for horizontal tab bars */
@@ -170,21 +152,6 @@
 }
 
 @layer components {
-  /* PWA install prompt styling */
-  .pwa-install-prompt {
-    @apply fixed bottom-0 left-0 right-0 z-50 p-4 pb-safe;
-    background: linear-gradient(to top, rgba(15, 15, 26, 0.98), rgba(15, 15, 26, 0.9));
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .pwa-install-prompt.show {
-    transform: translateY(0);
-  }
-  
   /* Mobile-optimized input styling */
   @media (max-width: 768px) {
     input[type="text"],
@@ -212,28 +179,6 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
   
-  /* App-like page transitions */
-  .page-enter {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  
-  .page-enter-active {
-    opacity: 1;
-    transform: translateX(0);
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-  }
-  
-  .page-exit {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  
-  .page-exit-active {
-    opacity: 0;
-    transform: translateX(-20px);
-    transition: opacity 0.15s ease-in, transform 0.15s ease-in;
-  }
 }
 
 /* Standalone mode (PWA) specific styles */
@@ -249,20 +194,4 @@
   }
 }
 
-/* Landscape mode optimization */
-@media (orientation: landscape) and (max-height: 500px) {
-  .video-container {
-    max-height: 100vh;
-    border-radius: 0;
-  }
-}
 
-/* Haptic feedback simulation (visual) */
-@keyframes haptic {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-}
-
-.haptic-tap {
-  animation: haptic 0.1s ease-in-out;
-}

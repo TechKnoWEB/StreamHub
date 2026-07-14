@@ -7,13 +7,6 @@ export interface Channel {
   quality: string
 }
 
-export interface StreamSource {
-  id: string
-  label: string
-  url: string
-  type: "iptv" | "web"
-}
-
 export interface M3UChannel {
   id: string
   name: string

@@ -173,8 +173,6 @@ async function fetchEsportex(category: string): Promise<ReturnType<typeof normal
   return (json[apiCat] || []).map(normalizeEsportex)
 }
 
-// ─── Adapter: fetch both APIs ─────────────────────────────────────────────────
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function parseTeamFromTag(tag: string): { home: string; away: string } {
