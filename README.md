@@ -12,36 +12,27 @@ A free, open-source dashboard for streaming live TV, browsing community playlist
 ## Features
 
 ### IPTV & Live TV
-- **IPTV Player** — Stream curated free IPTV channels with a built-in HLS player. Quality badges, category filters, and real-time connection status.
+- **IPTV Player** — Stream curated free IPTV channels with a built-in HLS player. Quality badges, category filters, and real-time connection status. Live match notifications from the Sports section.
 - **IPTV Catalog** — Browse 4,000+ community-maintained channels from [iptv-org/iptv](https://github.com/iptv-org/iptv) and [Free-TV/IPTV](https://github.com/Free-TV/IPTV) with automatic deduplication. Search by name, filter by category or country.
-- **Live Sports** — Watch live sports streams across football, basketball, NFL, hockey, cricket, and more via the free [SportSRC API](https://sportsrc.org) with embedded players.
-- **Live → Streams Integration** — Latest football match from Live Sports automatically appears in the Streams section as a one-click live card.
+- **Live Sports** — Dual-source sports streaming engine ([StreamFree](https://streamfree.top) + [ESportex](https://api.esportex.site) fallback). Covers football, basketball, NFL, hockey, baseball, motorsport, UFC/boxing, tennis, and cricket. Stream embeds with multi-source redundancy, language switching, and HD tags. Automatically cross-references with the IPTV player for one-click live match viewing.
 
 ### Stream Music
 
-#### Sources
 - **Internet Radio** — Browse 45,000+ radio stations from 200+ countries via the free [Radio Browser API](https://www.radio-browser.info). Search by name, filter by genre or country.
 - **YouTube Music** — Search and play YouTube music directly in the browser via the [Invidious API](https://invidious.io) (privacy-friendly, no API key needed).
-
-#### Music Player
-- **Persistent Player Bar** — Always-visible full-width bottom player with play/pause, skip, seek, volume, shuffle, repeat, and queue management.
-- **YouTube IFrame API** — Full integration with YouTube's IFrame API for real-time progress sync, seeking, and playback control (not just a raw iframe).
-- **Background Playback** — Media Session API keeps audio playing when the browser is minimized or the screen is off. Shows lock screen and notification controls on Android.
-- **Interactive Progress Bar** — Touch-friendly seek bar on mobile with a draggable thumb. Desktop hover expand with precise seeking.
-- **Mobile Expanded Player** — Bottom sheet with large album art, full controls, volume slider, and queue view. Frosted glass backdrop blur.
-- **Queue System** — Add tracks to queue, play next, clear queue. Visual queue panel on desktop, full-screen queue in mobile bottom sheet.
-- **Playlists** — Create, rename, delete custom playlists. Add tracks from search results. All persisted to localStorage.
-- **Favorites** — Heart any track to save it to favorites. Persisted across sessions.
-- **Recently Played** — Auto-tracks your last 50 played tracks with individual remove buttons.
-- **Compact Filters** — Genre and country filters use progressive disclosure (show 6 by default, expand for more). Two-column layout on desktop.
-- **Audio Visualizer** — Animated bars on currently playing radio tracks.
-- **Keyboard Shortcuts** — Full keyboard control (see below).
-- **Volume Memory** — Volume setting persists across sessions.
+- **Persistent Player Bar** — Always-visible bottom player with play/pause, skip, seek, volume, shuffle, repeat, and queue management.
+- **YouTube IFrame API** — Full integration with YouTube's IFrame API for real-time progress sync, seeking, and playback control.
+- **Background Playback** — Media Session API keeps audio playing when minimized. Lock screen controls on Android.
+- **Mobile Expanded Player** — Bottom sheet with large album art, full controls, volume slider, and queue view with frosted glass backdrop.
+- **Playlists & Queue** — Create custom playlists, manage queue (play next, clear), shuffle & repeat. All persisted to localStorage.
+- **Favorites & History** — Heart any track to save it. Auto-tracks last 50 played tracks.
+- **Keyboard Shortcuts** — Full keyboard control: Space (play/pause), arrows (seek/skip), M (mute), S (shuffle), R (repeat).
 
 ### General
-- **URL-based Navigation** — Page state persists across refreshes via URL hash routing (`#home`, `#iptv`, `#catalog`, `#sports`, `#music`).
-- **Dark / Light Mode** — Full theme support with smooth transitions.
-- **Responsive Design** — Mobile-first design. Optimized for phones, tablets, and desktop.
+- **PWA** — Installable on mobile/desktop. Works offline for cached content. Service worker with auto-update.
+- **Dark / Light Mode** — Full theme support with smooth transitions and persistent preference.
+- **Responsive Design** — Mobile-first. Bottom navigation on mobile, sidebar on desktop. Safe-area insets for notched devices.
+
 
 ---
 ## Screenshots
@@ -99,11 +90,13 @@ Powered by the **Media Session API** — the same technology used by Spotify and
 |--------|-------------|----------|---------|
 | [iptv-org/iptv](https://github.com/iptv-org/iptv) | Community-curated IPTV channels (category-grouped) | 2,500+ | MIT |
 | [Free-TV/IPTV](https://github.com/Free-TV/IPTV) | Country-organized IPTV channels (80+ countries) | 1,800+ | MIT |
-| [SportSRC API](https://sportsrc.org) | Free sports streaming API (match schedules + embedded streams) | — | Free API |
-| [Radio Browser API](https://www.radio-browser.info) | Free, open-source database of internet radio stations | 45,000+ | CC0 |
-| [Invidious API](https://invidious.io) | Privacy-friendly YouTube frontend for music search | — | AGPL-3.0 |
+| [StreamFree](https://streamfree.top) | Primary sports source — live-only streams with real viewer counts & badges | — | Free API |
+| [ESportex](https://api.esportex.site) | Secondary sports source — fallback for upcoming + live events | — | Free API |
+| [Radio Browser](https://www.radio-browser.info) | Free, open-source database of internet radio stations | 45,000+ | CC0 |
+| [Invidious](https://invidious.io) | Privacy-friendly YouTube frontend for music search | — | AGPL-3.0 |
 
-> **Deduplication:** IPTV M3U sources are merged at runtime. Duplicate streams (same URL) are automatically removed, resulting in ~4,000+ unique channels.
+> **Deduplication:** IPTV M3U sources are merged at runtime. Duplicate streams (same URL) are automatically removed (~4,000+ unique channels). Sports matches are deduplicated by title across both sources.
+
 
 ---
 
@@ -152,39 +145,39 @@ npm run preview
 ```
 src/
 ├── components/
-│   ├── HomePage.tsx              # Landing page with features & data sources
-│   ├── LiveStreams.tsx           # Curated IPTV channel player + live match embed
-│   ├── IPTVChannels.tsx          # Multi-source channel catalogue with filters
-│   ├── LiveSports.tsx            # Live sports streams & match schedules
-│   ├── LegalDisclaimer.tsx       # Legal & terms page
-│   ├── Sidebar.tsx               # Navigation sidebar
-│   └── VideoPlayer.tsx           # HLS video player component
-|   └── AboutPage.tsx             # About Project
-|   └── SportsPlayer.tsx          # LiveSports Video player component
+│   ├── HomePage.tsx              # Landing page
+│   ├── LiveStreams.tsx            # IPTV player + live match integration
+│   ├── IPTVChannels.tsx           # Multi-source channel catalog
+│   ├── LiveSports.tsx             # Dual-source sports engine
+│   ├── LegalDisclaimer.tsx        # Legal & terms
+│   ├── AboutPage.tsx              # About page
+│   ├── Sidebar.tsx                # Desktop navigation sidebar
+│   ├── BottomNav.tsx              # Mobile bottom navigation
+│   ├── PWAInstallBanner.tsx       # PWA install prompt
+│   ├── VideoPlayer.tsx            # HLS video player
+│   └── SportsPlayer.tsx           # Sports stream embed player
 ├── music/
-│   ├── types.ts                  # Music-specific TypeScript interfaces
-│   ├── MusicContext.tsx           # Global music state + Media Session API
+│   ├── types.ts                   # Music-specific types
+│   ├── MusicContext.tsx           # Global music state
 │   ├── hooks/
-│   │   ├── useAudioPlayer.ts     # HTML5 Audio controller
-│   │   ├── useYouTubePlayer.ts   # YouTube IFrame API controller
-│   │   ├── useRadioBrowser.ts    # Radio Browser API integration
-│   │   └── useYouTubeSearch.ts   # YouTube search via Invidious
+│   │   ├── useAudioPlayer.ts      # HTML5 Audio controller
+│   │   ├── useYouTubePlayer.ts    # YouTube IFrame API controller
+│   │   ├── useRadioBrowser.ts     # Radio Browser API integration
+│   │   └── useYouTubeSearch.ts    # YouTube search via Invidious
 │   └── components/
-│       ├── MusicPortal.tsx       # Main music page with tabs
-│       ├── MusicPlayer.tsx       # Persistent bottom player bar
-│       ├── SourceTabs.tsx        # Radio / YouTube / Playlists switcher
-│       ├── TrackCard.tsx         # Reusable track row with actions
-│       ├── InternetRadio.tsx     # Radio station browser with compact filters
-│       ├── YouTubeSearch.tsx     # YouTube music search
-│       ├── YouTubeEmbed.tsx      # YouTube IFrame API player
-│       └── MyPlaylists.tsx       # Playlist management + favorites + history
+│       ├── MusicPortal.tsx        # Main music page
+│       ├── MusicPlayer.tsx        # Persistent bottom player
+│       ├── TrackCard.tsx          # Reusable track row
+│       ├── InternetRadio.tsx      # Radio station browser
+│       ├── YouTubeSearch.tsx      # YouTube music search
+│       └── YouTubeEmbed.tsx       # YouTube IFrame player
 ├── context/
-│   ├── ThemeContext.tsx           # Dark/Light theme provider
-│   └── LiveStreamContext.tsx      # Live match state shared between Sports & Streams
-├── types.ts                      # IPTV TypeScript interfaces
-├── App.tsx                       # Root component with hash-based routing
-├── main.tsx                      # Entry point
-└── index.css                     # Global styles & Tailwind config
+│   ├── ThemeContext.tsx            # Dark/light theme
+│   └── LiveStreamContext.tsx       # Shared live match state
+├── types.ts                       # Shared TypeScript interfaces
+├── App.tsx                        # Root with hash routing
+├── main.tsx                       # Entry point
+└── index.css                      # Global styles
 ```
 
 ---
