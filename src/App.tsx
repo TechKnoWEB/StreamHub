@@ -146,7 +146,7 @@ function AppShell() {
               animate="animate"
               exit="exit"
               transition={CONTENT_TRANSITION}
-              className="min-h-full"
+              className="min-h-full h-full overflow-y-auto"
             >
               {renderContent()}
             </motion.div>

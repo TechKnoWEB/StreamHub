@@ -87,6 +87,7 @@ export default function IPTVChannels() {
     new Set()
   )
   const [activeChannel, setActiveChannel] = useState<M3UChannel | null>(null)
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false)
   const [totalCount, setTotalCount] = useState(0)
   const [sourcesLoaded, setSourcesLoaded] = useState(0)
   const searchRef = useRef<HTMLInputElement>(null)
@@ -216,7 +217,7 @@ export default function IPTVChannels() {
   }
 
   return (
-    <div className="flex flex-col xl:h-full">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="mb-5 sm:mb-6">
         <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -281,13 +282,63 @@ export default function IPTVChannels() {
       )}
 
       {/* Main Content */}
-      {!loading && !error && (
-        <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_500px] xl:grid-rows-[1fr] gap-4 sm:gap-6 xl:flex-1 xl:min-h-0">
-          {/* Channel List */}
-          <div className="flex flex-col min-h-0 order-2 xl:order-1">
-            {/* Search Bar */}
-            <div className="mb-4">
-              <div className="relative">
+      {!loading && !error && (<>
+        <div className="flex flex-col xl:grid xl:grid-cols-[1fr_380px] xl:grid-rows-[1fr] gap-4 sm:gap-6 flex-1 min-h-0">
+          {/* ── LEFT: Video Player (locked) ── */}
+          <div className="flex flex-col min-h-0 xl:flex-1">
+            {activeChannel ? (
+              <div className="flex flex-col min-h-0 xl:flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 rounded-lg bg-sport-yellow/15">
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-sport-yellow" />
+                  </div>
+                  <h3 className={`text-xs sm:text-sm font-semibold uppercase tracking-wider ${isDark ? "text-dark-100" : "text-slate-500"}`}>
+                    Now Playing
+                  </h3>
+                </div>
+                <div className="w-full min-h-0 rounded-2xl overflow-hidden bg-black border border-white/[0.06] h-[200px] sm:h-[280px] md:h-[360px] xl:aspect-video xl:h-auto xl:min-h-0 xl:max-h-[60vh]">
+                  <VideoPlayer
+                    src={activeChannel.url}
+                    title={`${activeChannel.name} — ${activeChannel.category}`}
+                    fillContainer
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center mx-auto mb-3 ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
+                    <Play className={`w-8 h-8 sm:w-10 sm:h-10 ${isDark ? "text-dark-100" : "text-slate-400"}`} />
+                  </div>
+                  <p className={`text-sm sm:text-base font-medium mb-0.5 ${isDark ? "text-white" : "text-slate-900"}`}>
+                    No channel selected
+                  </p>
+                  <p className={`text-xs sm:text-sm ${isDark ? "text-dark-100" : "text-slate-500"}`}>
+                    Click a channel to preview
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── RIGHT: Channel List ── */}
+          <div className="flex flex-col min-h-0 flex-1 xl:flex-initial">
+            {/* Filter Toggle + Search */}
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => setFilterPanelOpen(!filterPanelOpen)}
+                className={`p-2.5 rounded-xl transition-all shrink-0 ${
+                  filterPanelOpen
+                    ? "bg-accent text-white shadow-sm shadow-accent/20"
+                    : isDark
+                      ? "bg-dark-300/50 border border-dark-400/50 text-dark-100 hover:text-white hover:border-accent/50"
+                      : "bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:border-accent/50"
+                }`}
+                aria-label="Toggle filters"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </button>
+              <div className="flex-1 relative">
                 <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? "text-dark-100" : "text-slate-400"}`} />
                 <input
                   ref={searchRef}
@@ -314,26 +365,26 @@ export default function IPTVChannels() {
                   </button>
                 )}
               </div>
-              {(search || hasActiveFilters) && (
-                <div className="flex items-center gap-2 mt-2">
-                  <p className={`text-xs ${isDark ? "text-dark-100" : "text-slate-500"}`}>
-                    {filtered.length.toLocaleString()} results
-                    {search && <> for &quot;{search}&quot;</>}
-                  </p>
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearAllFilters}
-                      className="text-[10px] font-medium text-accent hover:text-accent-light transition-colors"
-                    >
-                      Clear filters
-                    </button>
-                  )}
-                </div>
-              )}
             </div>
+            {(search || hasActiveFilters) && (
+              <div className="flex items-center gap-2 -mt-2 mb-4">
+                <p className={`text-xs ${isDark ? "text-dark-100" : "text-slate-500"}`}>
+                  {filtered.length.toLocaleString()} results
+                  {search && <> for &quot;{search}&quot;</>}
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-[10px] font-medium text-accent hover:text-accent-light transition-colors"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Channel List */}
-            <div ref={channelListRef} className="max-h-[58vh] xl:max-h-none xl:flex-1 xl:min-h-0 overflow-y-auto space-y-1.5 pr-1 pb-1">
+            <div ref={channelListRef} className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pb-1">
               {grouped.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16">
                   <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
@@ -463,69 +514,44 @@ export default function IPTVChannels() {
               ))}
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="flex flex-col min-h-0 gap-4 order-1 xl:order-2">
-            {/* Compact Filter Panel */}
-            <FilterPanel
-              isDark={isDark}
-              categories={categories}
-              countries={countries}
-              selectedCategory={selectedCategory}
-              selectedCountry={selectedCountry}
-              onSelectCategory={setSelectedCategory}
-              onSelectCountry={setSelectedCountry}
-            />
-
-            {/* Player Section */}
-            {activeChannel && (
-              <div className="flex flex-col min-h-0 xl:flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 rounded-lg bg-sport-yellow/15">
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-sport-yellow" />
-                  </div>
-                  <h3
-                    className={`text-xs sm:text-sm font-semibold uppercase tracking-wider ${isDark ? "text-dark-100" : "text-slate-500"}`}
-                  >
-                    Now Playing
-                  </h3>
-                </div>
-                <div className="w-full min-h-0 rounded-2xl overflow-hidden bg-black border border-white/[0.06] h-[200px] sm:h-[280px] md:h-[360px] xl:aspect-video xl:h-auto xl:min-h-0 xl:max-h-[450px]">
-                  <VideoPlayer
-                    src={activeChannel.url}
-                    title={`${activeChannel.name} — ${activeChannel.category}`}
-                    fillContainer
-                  />
-                </div>
-              </div>
-            )}
-
-            {!activeChannel && (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <div
-                    className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center mx-auto mb-3 ${isDark ? "bg-white/5" : "bg-slate-100"}`}
-                  >
-                    <Play
-                      className={`w-8 h-8 sm:w-10 sm:h-10 ${isDark ? "text-dark-100" : "text-slate-400"}`}
-                    />
-                  </div>
-                  <p
-                    className={`text-sm sm:text-base font-medium mb-0.5 ${isDark ? "text-white" : "text-slate-900"}`}
-                  >
-                    No channel selected
-                  </p>
-                  <p
-                    className={`text-xs sm:text-sm ${isDark ? "text-dark-100" : "text-slate-500"}`}
-                  >
-                    Click a channel to preview
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
-      )}
+
+        {/* Filter Panel Overlay */}
+        <div className={`fixed inset-0 z-50 flex items-start justify-end transition-all duration-300 ${
+          filterPanelOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+        }`}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300" onClick={() => setFilterPanelOpen(false)} />
+          <div className={`relative w-full max-w-sm h-full overflow-y-auto shadow-2xl transition-transform duration-300 ease-out ${
+            filterPanelOpen ? "translate-x-0" : "translate-x-full"
+          } ${isDark ? "bg-dark-300/95 backdrop-blur-xl border-l border-white/5" : "bg-white/95 backdrop-blur-xl border-l border-slate-200"}`}>
+              <div className={`flex items-center justify-between px-5 py-4 border-b ${isDark ? "border-white/5" : "border-slate-200"}`}>
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-accent-light" />
+                  <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? "text-dark-100" : "text-slate-500"}`}>
+                    Filters
+                  </span>
+                </div>
+                <button
+                  onClick={() => setFilterPanelOpen(false)}
+                  className={`p-2 rounded-lg transition-colors ${isDark ? "hover:bg-white/10 text-dark-100 hover:text-white" : "hover:bg-slate-100 text-slate-500"}`}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="p-4">
+                <FilterPanel
+                  isDark={isDark}
+                  categories={categories}
+                  countries={countries}
+                  selectedCategory={selectedCategory}
+                  selectedCountry={selectedCountry}
+                  onSelectCategory={setSelectedCategory}
+                  onSelectCountry={setSelectedCountry}
+                />
+              </div>
+            </div>
+          </div>
+      </>)}
     </div>
   )
 }
