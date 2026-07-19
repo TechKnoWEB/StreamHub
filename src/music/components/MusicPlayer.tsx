@@ -367,7 +367,7 @@ export default function MusicPlayer() {
         initial={{ y: 100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className={`fixed bottom-0 left-0 right-0 z-40 safe-area-bottom ${panelClass}`}
+        className={`fixed left-0 right-0 z-30 safe-area-bottom bottom-[72px] lg:bottom-0 ${panelClass}`}
       >
         <div
           className="relative w-full cursor-pointer group py-2 hidden md:block"

@@ -1,9 +1,18 @@
 ﻿import { useTheme } from "../../context/ThemeContext"
 import { useMusic } from "../hooks/useMusic"
-import { Play, Plus, Clock, Heart, ListPlus, Waves } from "lucide-react"
+import { Play, Plus, Clock, Heart, ListPlus, Waves, ExternalLink } from "lucide-react"
 import { motion } from "framer-motion"
 import { useState } from "react"
 import type { Track } from "../types"
+
+function getCountryFlag(countryCode: string): string {
+  if (!countryCode || countryCode.length !== 2) return ""
+  const codePoints = countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => 0x1f1e6 + char.charCodeAt(0) - 65)
+  return String.fromCodePoint(...codePoints)
+}
 
 interface TrackCardProps {
   track: Track
@@ -29,7 +38,8 @@ export default function TrackCard({ track, index, queue, showIndex = false, show
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index ? Math.min(index * 0.03, 0.3) : 0 }}
-      className={`group relative overflow-hidden flex items-center gap-3 p-3 rounded-2xl border transition-all duration-200 ${
+      onClick={() => playTrack(track, queue)}
+      className={`group relative overflow-hidden flex items-center gap-3 p-3 rounded-2xl border transition-all duration-200 cursor-pointer active:scale-[0.98] ${
         isDark
           ? "bg-dark-300/40 border-white/[0.06] hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg hover:shadow-black/10"
           : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:shadow-[0_8px_30px_rgba(15,23,42,0.06)]"
@@ -84,8 +94,18 @@ export default function TrackCard({ track, index, queue, showIndex = false, show
         <p className={`text-xs truncate mt-0.5 ${isDark ? "text-dark-100" : "text-slate-500"}`}>
           {track.artist}
         </p>
-        {showMetadata && isRadio && (track.codec || track.bitrate) && (
+        {showMetadata && isRadio && (track.codec || track.bitrate || track.country || track.language) && (
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
+            {track.country && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold ${isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"}`}>
+                {getCountryFlag(track.country.slice(0, 2))} {track.country}
+              </span>
+            )}
+            {track.language && (
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold ${isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"}`}>
+                {track.language}
+              </span>
+            )}
             {track.codec && (
               <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold ${isDark ? "bg-white/5 text-dark-100" : "bg-slate-100 text-slate-500"}`}>
                 {track.codec}
@@ -114,8 +134,6 @@ export default function TrackCard({ track, index, queue, showIndex = false, show
             toggleFavorite(track)
           }}
           className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all ${isFav ? "text-sport-red opacity-100" : isDark ? "text-dark-100 md:opacity-0 md:group-hover:opacity-100 hover:text-sport-red" : "text-slate-400 md:opacity-0 md:group-hover:opacity-100 hover:text-sport-red"}`}
-          whileTap={{ scale: 0.85 }}
-          title={isFav ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
         </motion.button>
@@ -126,8 +144,6 @@ export default function TrackCard({ track, index, queue, showIndex = false, show
             addToQueue(track)
           }}
           className={`flex p-2.5 min-w-[44px] min-h-[44px] items-center justify-center rounded-lg transition-all ${isDark ? "text-dark-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-white/10" : "text-slate-400 md:opacity-0 md:group-hover:opacity-100 hover:bg-slate-100"}`}
-          whileTap={{ scale: 0.9 }}
-          title="Add to queue"
         >
           <Plus className="w-4 h-4" />
         </motion.button>
@@ -139,7 +155,6 @@ export default function TrackCard({ track, index, queue, showIndex = false, show
               setShowMenu(!showMenu)
             }}
             className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-all ${isDark ? "text-dark-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-white/10" : "text-slate-400 md:opacity-0 md:group-hover:opacity-100 hover:bg-slate-100"}`}
-            whileTap={{ scale: 0.9 }}
           >
             <ListPlus className="w-4 h-4" />
           </motion.button>
@@ -161,6 +176,18 @@ export default function TrackCard({ track, index, queue, showIndex = false, show
                   <Play className="w-3.5 h-3.5" />
                   Play Next
                 </button>
+                {track.platformUrl && (
+                  <a
+                    href={track.platformUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full flex items-center gap-2 px-3 py-3 text-xs font-medium ${isDark ? "text-white hover:bg-white/5" : "text-slate-700 hover:bg-slate-50"}`}
+                    onClick={() => setShowMenu(false)}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Visit Website
+                  </a>
+                )}
                 {state.playlists.map((pl) => (
                   <button
                     key={pl.id}
