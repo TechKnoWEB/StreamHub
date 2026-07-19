@@ -1,11 +1,11 @@
-﻿import { useState, useMemo, useEffect, useRef } from "react"
+﻿import { useState, useMemo, useEffect } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { useRadioBrowser } from "../hooks/useRadioBrowser"
 import { useMusic } from "../hooks/useMusic"
 import TrackCard from "./TrackCard"
 import {
   Search, Radio, Globe, Music2, Loader2, AlertCircle, PlayCircle,
-  ChevronDown, Languages, RefreshCw, SlidersHorizontal, Filter, X
+  ChevronDown, Languages, RefreshCw, SlidersHorizontal, X
 } from "lucide-react"
 import { motion } from "framer-motion"
 import type { Track, RadioStation } from "../types"
