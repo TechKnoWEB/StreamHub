@@ -12,6 +12,7 @@ export interface Track {
   codec?: string
   bitrate?: number
   country?: string
+  language?: string
 }
 
 export interface RadioStation {
