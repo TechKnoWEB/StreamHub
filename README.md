@@ -104,7 +104,7 @@ Powered by the **Media Session API** — the same technology used by Spotify and
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+ (recommended 20+)
+- [Node.js](https://nodejs.org/) 22.18+ (also required for the regression tests)
 - npm or yarn or pnpm
 
 
@@ -137,6 +137,31 @@ Output will be in the `dist/` directory.
 ```bash
 npm run preview
 ```
+
+StreamFree playback uses the `/api/streamfree` server adapter, included in both
+the development and preview servers. A static file server for `dist/` alone
+does not provide this endpoint. `api/streamfree.js` exposes the same handler for
+Node serverless deployments; public deployment has not been validated.
+
+### Playback regression tests
+
+```bash
+npm test
+npm run build
+```
+
+The tests use simulated provider failures and do not require a live match.
+They cover source parsing, DNS/IP failover, rate limits, deadlines, and playback
+recovery. In the player, Pause suspends scheduled recovery and provider retry
+delays appear as a countdown. Reconnect starts a new attempt after recovery fails.
+
+On a local server, `/api/streamfree?action=health` returns bounded routing
+diagnostics without signed URLs or tokens. Diagnostics are loopback-only and
+should not be exposed through a reverse proxy. The adapter uses Google and
+Cloudflare public DNS when system DNS fails, without changing system settings
+or disabling TLS verification. Provider availability and access requirements
+can still prevent playback; native-HLS-only browser recovery is not covered by
+the hls.js workflow tests.
 
 ---
 
@@ -189,6 +214,7 @@ src/
 | `npm run dev` | Start Vite dev server with HMR |
 | `npm run build` | TypeScript compile + Vite production build |
 | `npm run preview` | Preview the production build locally |
+| `npm test` | Run offline playback and provider regression tests |
 | `npm run lint` | Run ESLint |
 
 ---
@@ -202,7 +228,11 @@ Loads curated free IPTV channels (beIN Sports, Fox Sports, etc.) and streams the
 Fetches M3U playlists from **two sources** in parallel (iptv-org + Free-TV), deduplicates by stream URL, and merges into a single unified catalog. Supports search, category filtering, and country filtering.
 
 ### Live Sports
-Connects to the SportSRC API to display upcoming match schedules across 9 sport categories. Selecting a match loads embedded stream players directly from `embed.st`.
+Loads StreamFree and ESportex listings with per-source status and retry controls.
+StreamFree supports both current `sources[]` entries and legacy `embed_url`
+entries. Supported provider embeds use the local HLS adapter; other sources
+retain their embedded players. Channel feeds are labeled separately from live
+matches so old channel timestamps do not imply that a specific match is live.
 
 ### Stream Music
 The music portal connects to two free APIs:

@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from "vite"
+import { streamfreeHandler } from "./server/streamfree.mjs"
 import react from "@vitejs/plugin-react"
 import { VitePWA } from "vite-plugin-pwa"
 
@@ -15,7 +16,11 @@ function rewritePlaylist(body: string, targetUrl: string, proxyEndpoint: string)
 function iptvProxy(): Plugin {
   return {
     name: "iptv-proxy",
+    configurePreviewServer(server) {
+      server.middlewares.use("/api/streamfree", streamfreeHandler)
+    },
     configureServer(server) {
+      server.middlewares.use("/api/streamfree", streamfreeHandler)
       server.middlewares.use("/api/iptv-proxy", async (req, res) => {
         const urlStr = new URL(req.url!, "http://localhost").searchParams.get("url")
         if (!urlStr) { res.statusCode = 400; res.end("Missing url"); return }

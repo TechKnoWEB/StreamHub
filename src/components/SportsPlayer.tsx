@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Loader2, WifiOff, RefreshCw, ExternalLink } from "lucide-react"
 import VideoPlayer from "./VideoPlayer"
+import { isHlsSource } from "../lib/streamfree-sources"
 
 export interface StreamSource {
   id: string
@@ -24,7 +25,7 @@ const IFRAME_TIMEOUT_MS = 12000
 const RETRY_COOLDOWN_MS = 15000
 
 function isDirectStream(url: string): boolean {
-  return /\.(m3u8|mp4|webm)(\?|$)/i.test(url)
+  return isHlsSource(url) || /\.(mp4|webm)(\?|$)/i.test(url)
 }
 
 export default function SportsPlayer({
@@ -121,7 +122,7 @@ export default function SportsPlayer({
       <VideoPlayer
         key={currentSource.embedUrl}
         src={currentSource.embedUrl}
-        title={title ? `${title} — ${currentSource.language}` : undefined}
+        title={title ? (currentSource.language ? `${title} — ${currentSource.language}` : title) : undefined}
         fillContainer={fillContainer}
       />
     )

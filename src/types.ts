@@ -18,6 +18,7 @@ export interface M3UChannel {
 }
 
 export interface Match {
+  kind?: "channel" | "match"
   id: string
   title: string
   category: string
@@ -31,6 +32,7 @@ export interface Match {
 }
 
 export interface MatchDetail {
+  kind?: "channel" | "match"
   id: string
   title: string
   category: string
